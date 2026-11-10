@@ -1081,6 +1081,14 @@ ol.steps.alpha{ list-style-type: lower-alpha; }
 .axr-frame-top{ display:flex; justify-content:space-between; align-items:flex-end; gap:12px; flex-wrap:wrap; margin-bottom:10px; }
 .axr-frame{ width:100%; height:calc(100vh - 190px); min-height:620px; border:1px solid var(--gray-200); border-radius:12px; background:#EEF1F5; display:block; }
 
+/* busca compacta dentro do cabeçalho da página inicial */
+.busca-hero{ margin:16px auto 0; text-align:left; }
+.busca-hero .busca-campo{ max-width:420px; margin:0 auto; }
+.busca-hero .busca{ margin:0; }
+.busca-hero .busca-campo{ padding:7px 12px; border-width:1px; box-shadow:none; border-radius:999px; }
+.busca-hero .busca-campo input{ font-size:14px; }
+.busca-hero .busca-campo svg{ width:16px; height:16px; }
+
 </style>
 </head>
 <body>
@@ -1697,14 +1705,8 @@ const SCREENS = {
       <div class="hero-eyebrow">Defesa Civil-RJ · PLANCON ${VERSAO.ciclo} · ${VERSAO.decretos}</div>
       <h2>Plano de Contingências para Chuvas Intensas</h2>
       <p class="sub">Preparação e resposta estadual aos desastres ocasionados pelas chuvas intensas no Estado do Rio de Janeiro — sempre em complementação às ações dos municípios.</p>
-      <div class="stats-row">
-        <div class="stat"><strong>6</strong><span>níveis de monitoramento (NM 0–5)</span></div>
-        <div class="stat"><strong>6</strong><span>níveis de resposta (NR 0–5)</span></div>
-        <div class="stat"><strong>3</strong><span>graus da Escala de Impactos</span></div>
-        <div class="stat"><strong>${ORG_ORDER.length}</strong><span>estruturas com ações no Quadro Global</span></div>
-      </div>
+      <div class="busca-hero">${buscaBoxHTML()}</div>
     </div>
-    ${buscaBoxHTML()}
     <div class="grid hero-cta">
       <div class="card orange" onclick="nav('cartao')"><div class="icon">${icon('flag')}</div><h3>Cartão-resumo</h3><p>Consulta rápida para plantão: a escada de Monitoramento (NM) e de Resposta (NR).</p><div class="go">Abrir ${icon('chevron')}</div></div>
       <div class="card" onclick="nav('uso')"><div class="icon">${icon('book')}</div><h3>1 · Introdução e uso do plano</h3><p>Finalidade, lógica do apoio estadual, cenário de risco e leitura rápida por perfil.</p><div class="go">Abrir ${icon('chevron')}</div></div>
@@ -2182,7 +2184,7 @@ function destacar(q){
 }
 function buscaBoxHTML(){
   return `<div class="busca">
-    <div class="busca-campo">${icon('search')}<input id="buscaInput" type="search" placeholder="Buscar no Plano: digite qualquer termo (ex.: GIGD, sirenes, Idap, NM 4…)" value="${esc(buscaQ)}" oninput="clearTimeout(window._bt); window._bt=setTimeout(()=>buscar(this.value),180)" autocomplete="off"></div>
+    <div class="busca-campo">${icon('search')}<input id="buscaInput" type="search" placeholder="Buscar no plano…" value="${esc(buscaQ)}" oninput="clearTimeout(window._bt); window._bt=setTimeout(()=>buscar(this.value),180)" autocomplete="off"></div>
     <div id="buscaResultados"></div></div>`;
 }
 
