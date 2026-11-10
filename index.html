@@ -1078,6 +1078,9 @@ ol.steps.alpha{ list-style-type: lower-alpha; }
 .axr-item-head p .tag{ font-size:11px; margin-left:4px; vertical-align:middle; }
 :root[data-theme="dark"] .axr-obs{ background:rgba(255,154,90,.10); }
 
+.axr-frame-top{ display:flex; justify-content:space-between; align-items:flex-end; gap:12px; flex-wrap:wrap; margin-bottom:10px; }
+.axr-frame{ width:100%; height:calc(100vh - 190px); min-height:620px; border:1px solid var(--gray-200); border-radius:12px; background:#EEF1F5; display:block; }
+
 </style>
 </head>
 <body>
@@ -1718,7 +1721,7 @@ const SCREENS = {
     </div>
     <div class="axr-highlight" onclick="nav('matriz-axr')">
       <div class="icon">${icon('layers')}</div>
-      <div class="macro-text"><h3>Matriz AxR — Chuvas Intensas ${VERSAO.ciclo}</h3><p>${MATRIZ.externa?'Atividades do Plano por fase e por órgão, no modelo RACI — documento próprio do Plano.':`${MATRIZ.total} atividades e ${MATRIZ.colunas.length} instituições.`}</p></div>
+      <div class="macro-text"><h3>Matriz AxR — modelo RACI (Responsável, Apoio, Consultado e Informado)</h3><p>Extratos por órgão da Matriz de Atividades × Responsabilidades do PLANCON Chuvas Intensas ${VERSAO.ciclo}: capa, introdução, resumo do órgão e atividades — com impressão em PDF.</p></div>
       <div class="go">Abrir ${icon('chevron')}</div>
     </div>
     <div class="macro-divider">Documento oficial</div>
@@ -1889,7 +1892,7 @@ const SCREENS = {
       <p>${ANX.sraasFim}</p>
       <div class="btnrow"><a class="anexo-btn" href="${ANX.linkSraas}" target="_blank" rel="noopener">${icon('external')}Protocolos SRAAS 2026-2027 (pasta)</a></div></div>
     <div class="panel"><h4>Escala de Impactos (Matriz ICR-S2ID)</h4><p>Matriz completa com os critérios C1 a C10 para os três graus.</p><div class="btnrow"><button class="anexo-btn" onclick="nav('icr')">${icon('target')}Abrir a Escala de Impactos</button></div></div>
-    <div class="panel"><h4>Matriz de Atividades × Responsabilidades (AxR)</h4><p>${ANX.axr}</p><div class="btnrow"><button class="anexo-btn" onclick="nav('matriz-axr')">${icon('layers')}Matriz AxR</button></div></div>
+    <div class="panel"><h4>Matriz de Atividades × Responsabilidades (AxR)</h4><p>${ANX.axr}</p><div class="btnrow"><button class="anexo-btn" onclick="nav('matriz-axr')">${icon('layers')}Matriz AxR — modelo RACI</button></div></div>
     <div class="panel"><h4>Planos setoriais</h4><p>${ANX.setorial}</p><p><strong>O que o plano setorial traz:</strong></p><ul class="bullets">${ANX.setorialTraz.map(t=>`<li>${t}</li>`).join('')}</ul>
       <p><strong>Obrigações dos órgãos estaduais do GRAC:</strong></p><ul class="bullets">${ANX.setorialObrig.map(t=>`<li>${t}</li>`).join('')}</ul><p class="muted">${ANX.setorialFed}</p></div>
     <div class="btnrow"><button class="anexo-btn" onclick="nav('cenario')">${icon('flood')}Cenário de risco e população exposta</button>${pdfBtn(49)}</div>
@@ -2080,6 +2083,24 @@ MATRIZ.colunas.forEach((c,i) => { const base = SCREENS['inst-'+i].render;
 
 function ativsDe(i){ let k=0; MATRIZ.fases.forEach(f=>f.atividades.forEach(a=>{ if(a.cel[i]) k++; })); return k; }
 
+
+/* ===================== Matriz AxR = somente o HTML "Extratos AxR PLANCON Chuvas 2026-2027" ===================== */
+let AXR_URL = null;
+function axrUrl(){
+  if (!AXR_URL){ const bin = atob(EXTRATOS_B64); const bytes = new Uint8Array(bin.length);
+    for (let j=0;j<bin.length;j++) bytes[j]=bin.charCodeAt(j);
+    AXR_URL = URL.createObjectURL(new Blob([bytes],{type:'text/html;charset=utf-8'})); }
+  return AXR_URL;
+}
+function axrFrame(sigla){
+  const h = sigla ? '#'+encodeURIComponent(sigla) : '';
+  return `<div class="axr-frame-top"><div><div class="section-title" style="margin:0">Matriz AxR — modelo RACI</div>
+      <p class="muted" style="margin:2px 0 0">Responsável, Apoio, Consultado e Informado · PLANCON Chuvas Intensas ${VERSAO.ciclo}${sigla?` · órgão selecionado: <b>${sigla}</b>`:''}</p></div>
+    <button class="anexo-btn" onclick="window.open(axrUrl()+'${h}','_blank')">${icon('external')}Abrir em nova aba</button></div>
+    <iframe class="axr-frame" src="${axrUrl()}${h}" title="Extratos da Matriz AxR — PLANCON Chuvas Intensas ${VERSAO.ciclo}"></iframe>`;
+}
+SCREENS['matriz-axr'] = { crumb:'Matriz AxR — modelo RACI', render:() => axrFrame('') };
+MATRIZ.colunas.forEach((c,i) => { if (temExtrato(c)) SCREENS['inst-'+i] = { crumb:'Matriz AxR — '+c, render:() => axrFrame(c) }; else delete SCREENS['inst-'+i]; });
 const COBRADE_URL = "https://www.gov.br/mdr/pt-br/assuntos/protecao-e-defesa-civil/docu_cobrade.pdf/view";
 
 function pdfUrl(b64){ const bin=atob(b64); const by=new Uint8Array(bin.length); for(let j=0;j<bin.length;j++) by[j]=bin.charCodeAt(j); return URL.createObjectURL(new Blob([by],{type:'application/pdf'})); }
@@ -2187,11 +2208,7 @@ function ativScreen(num){
 }
 function trocarAtiv(n){ stack[stack.length-1]='ativ-'+n; render(); window.scrollTo({top:0,behavior:'smooth'}); }
 ATIVS.forEach(a => { SCREENS['ativ-'+a.num] = { crumb:'Atividade '+a.num, render:() => ativScreen(a.num) }; });
-ATIVS.forEach(a => { const base = SCREENS['ativ-'+a.num].render;
-  SCREENS['ativ-'+a.num].render = () => { const notas = Object.entries(a.notas||{}); const novos = Object.keys(a.novo||{});
-    const extra = (notas.length ? `<div class="panel" style="margin-top:16px"><h4>Contribuições esperadas informadas pelos órgãos (2026/2027)</h4><div class="indlist">${notas.map(([o,t])=>`<div class="ind"><span class="ind-n cod">${o}</span><span>${t}</span></div>`).join('')}</div></div>` : '')
-      + (novos.length ? `<p class="muted" style="margin-top:10px"><span class="nova-flag">Novo</span> Papel incluído nesta edição para: ${novos.join(', ')}.</p>` : '');
-    return base().replace('<div class="inst-resumo">', `${a.comum?'<p><span class="tag">Atividade comum a todos os integrantes do GRAC</span></p>':''}<div class="inst-resumo">`).replace('<div class="nr-nav">', extra + '<div class="nr-nav">'); }; });
+Object.keys(SCREENS).filter(k=>k.startsWith('ativ-')).forEach(k=>delete SCREENS[k]);
 
 /* ===================== Página única por órgão/setor ===================== */
 const SIG = {}; SIGLAS.forEach(([s,d]) => SIG[s] = d);
@@ -2225,10 +2242,7 @@ const ENT = [
 ];
 ENT.forEach(e => { e.slug = 'ent-' + slugify(e.k); const g = GOV_DESC[e.k]; e.nome = (g&&g.nome) || SIG[e.k] || ''; e.desc = g && g.d; e.grupo = g && g.g; });
 const SEDEC_UNIDADES = ["CEMADEN-RJ","FE-SEDEC","CESTAD","DCCA","DIINTER","DREDEC","DGDEC","REDEC","COERODEC","CApLog","GEAD","GIGR","GIGD","USIT","SUOP","DGAC","CEAMA","CEPEDEC"];
-ENT.forEach(e => {
-  if (SEDEC_UNIDADES.includes(e.k)) { e.inst = MATRIZ.colunas.indexOf('SEDEC-RJ'); e.instNota = 'na Matriz AxR, as unidades da SEDEC-RJ aparecem na coluna SEDEC-RJ'; }
-  const j = MATRIZ.colunas.indexOf(e.k); if (j>=0) e.inst = j;
-});
+ENT.forEach(e => { const j = MATRIZ.colunas.indexOf(e.k); if (j>=0 && temExtrato(e.k)) e.inst = j; });
 function entOf(label){ return ENT.find(e => e.re.test(label)); }
 function linkTag(label, extra=''){
   const e = entOf(label);
@@ -2251,7 +2265,7 @@ function entScreen(e){
     ${nrsEstr.length?`<div class="panel"><h4>Prevista nas estruturas dos níveis (Quadro 2)</h4><div class="tags">${nrsEstr.map(n=>`<span class="lvl-pill clic" data-lvl="${n}" onclick="nav('nr-${n}')">NR ${n} · ${NR[n].nome}</span>`).join('')}</div></div>`:''}
     <div class="ent-links">
       ${orgsP.map(o=>`<div class="macro-link" onclick="nav('org-${o.slug}')"><div class="icon">${icon('org')}</div><div class="macro-text"><h3>Atribuições de ${o.nome} no Quadro Global</h3><p>Ações nos NR ${Object.keys(o.porNR).join(', ')}.</p></div><div class="go">${icon('chevron')}</div></div>`).join('')}
-      ${e.inst!=null && MATRIZ.colunas[e.inst]?`<div class="macro-link" onclick="nav('inst-${e.inst}')"><div class="icon">${icon('layers')}</div><div class="macro-text"><h3>${MATRIZ.colunas[e.inst]} na Matriz AxR</h3><p>Atividades por papel${e.instNota?` (${e.instNota})`:''}.</p></div><div class="go">${icon('chevron')}</div></div>`:''}
+      ${e.inst!=null && MATRIZ.colunas[e.inst]?`<div class="macro-link" onclick="nav('inst-${e.inst}')"><div class="icon">${icon('layers')}</div><div class="macro-text"><h3>Extrato de ${MATRIZ.colunas[e.inst]} na Matriz AxR</h3><p>Atividades em que o órgão é Responsável, Apoio, Consultado ou Informado.</p></div><div class="go">${icon('chevron')}</div></div>`:''}
       ${e.tela?`<div class="macro-link" onclick="nav('${e.tela}')"><div class="icon">${icon('book')}</div><div class="macro-text"><h3>${SCREENS[e.tela].crumb}</h3><p>Tela do plano relacionada.</p></div><div class="go">${icon('chevron')}</div></div>`:''}
     </div>
     <div class="section-title" style="font-size:17px;margin-top:22px">${orgsP.length?'Citado nas ações de outros órgãos/setores e nos indicadores':'Menções no Quadro Global'}</div>
@@ -2286,9 +2300,9 @@ const INST_ALIAS = [["Defesas Civis Municipais","MUNICÍPIO"],["Defesa Civil Mun
   ["Serviço Geológico do Brasil","CPRM"],["Marinha do Brasil","MARINHA"],["Força Aérea Brasileira","FAB"],["Aeronáutica","FAB"],["Vigilância Sanitária","SUP. VIGILÂNCIA SANITÁRIA"],["Defensoria Pública","DEFENSORIA PÚBLICA"],["SEDEC Nacional","SEDEC NACIONAL"],["Secretaria Nacional de Proteção e Defesa Civil","SEDEC NACIONAL"],["SEDEC/MIDR","SEDEC NACIONAL"]];
 const NAO_COLUNA = ['MUNICÍPIO','MARINHA','EXÉRCITO','DEFENSORIA PÚBLICA','SUP. VIGILÂNCIA SANITÁRIA','SEDEC NACIONAL','CASA CIVIL'];
 if (MATRIZ.colunas.length){
-  MATRIZ.colunas.forEach((c,i) => { if (!NAO_COLUNA.includes(c) && !LINK_TERMOS.some(x=>x.t===c)) LINK_TERMOS.push({t:c, alvo:'inst-'+i, tit:(MATRIZ.nomes||[])[i]||c}); });
-  MATRIZ.nomes.forEach((n,i) => { if (n && n.length>12 && !/^Órgãos municipais/.test(n)) LINK_TERMOS.push({t:n, alvo:'inst-'+i, tit:n}); });
-  INST_ALIAS.forEach(([t,c]) => { const i = MATRIZ.colunas.indexOf(c); if (i>=0) LINK_TERMOS.push({t, alvo:'inst-'+i, tit:MATRIZ.nomes[i]}); });
+  MATRIZ.colunas.forEach((c,i) => { if (temExtrato(c) && !NAO_COLUNA.includes(c) && !LINK_TERMOS.some(x=>x.t===c)) LINK_TERMOS.push({t:c, alvo:'inst-'+i, tit:(MATRIZ.nomes||[])[i]||c}); });
+  MATRIZ.nomes.forEach((n,i) => { if (temExtrato(MATRIZ.colunas[i]) && n && n.length>12) LINK_TERMOS.push({t:n, alvo:'inst-'+i, tit:n}); });
+  INST_ALIAS.forEach(([t,c]) => { const i = MATRIZ.colunas.indexOf(c); if (i>=0 && temExtrato(c)) LINK_TERMOS.push({t, alvo:'inst-'+i, tit:MATRIZ.nomes[i]}); });
 }
 const LINK_MAP = {}; LINK_TERMOS.forEach(x => { if(!LINK_MAP[x.t]) LINK_MAP[x.t]=x; });
 const LINK_RE = new RegExp('(?<![A-Za-zÀ-ÿ0-9/-])(' + Object.keys(LINK_MAP).sort((a,b)=>b.length-a.length).map(t=>t.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')).join('|') + ')(?![A-Za-zÀ-ÿ0-9/])', 'g');
@@ -2304,7 +2318,7 @@ function linkificar(root){
       const x = LINK_MAP[m[1]]; if (!x || x.alvo===atual) continue;
       frag.appendChild(document.createTextNode(t.slice(last, m.index)));
       const a = document.createElement('a'); a.className='inst-link'; a.href='javascript:void(0)'; a.textContent=m[1];
-      a.title = x.alvo.startsWith('inst-') ? `${x.tit} — ver suas atividades na Matriz AxR` : `${x.tit} — definição, atribuições e atividades na Matriz AxR`;
+      a.title = x.alvo.startsWith('inst-') ? `${x.tit} — abrir o extrato do órgão na Matriz AxR (modelo RACI)` : `${x.tit} — definição, atribuições e atividades na Matriz AxR`;
       a.onclick = ev => { ev.stopPropagation(); nav(x.alvo); };
       frag.appendChild(a); last = m.index + m[1].length;
     }
