@@ -1104,6 +1104,13 @@ ol.steps.alpha{ list-style-type: lower-alpha; }
 .sraas-link .icon{ background:#fff; color:#0b2545; } .sraas-link .go{ color:#fff; } .sraas-link .go svg{ stroke:#fff; }
 .sraas-link:hover{ background:#12355f; }
 
+#aviso-dev{ position:fixed; inset:0; background:rgba(11,37,69,.45); display:none; align-items:center; justify-content:center; z-index:9999; }
+#aviso-dev.on{ display:flex; }
+#aviso-dev .aviso-box{ background:var(--surface,#fff); border-radius:14px; padding:24px 28px; text-align:center; max-width:360px; box-shadow:0 12px 40px rgba(0,0,0,.25); }
+#aviso-dev .aviso-tag{ display:inline-block; background:#0b2545; color:#fff; font-weight:800; letter-spacing:.08em; padding:6px 16px; border-radius:999px; font-size:15px; }
+#aviso-dev p{ margin:14px 0 16px; color:var(--gray-600,#555); }
+#aviso-dev button{ border:0; background:var(--blue-100,#e6eef8); color:var(--blue-800,#16467a); font-weight:700; padding:8px 18px; border-radius:8px; cursor:pointer; }
+
 </style>
 </head>
 <body>
@@ -1713,10 +1720,22 @@ function nmTabelaHTML(){
 }
 
 let stack = ['home'];
+// ── Links ainda não autorizados: para liberar, troque emDev:true por emDev:false ──
+const LINK_SRAAS={u:'https://marceloabelheira-cmd.github.io/PLANCON_CHUVAS_2026.2027_protocolo.SIRENES/',emDev:true};
+function linkOuDev(p){ return p.emDev ? `href="#" onclick="avisoEmDev(event)"` : `href="${p.u}" target="_blank" rel="noopener"`; }
+function avisoEmDev(ev){
+  if(ev){ ev.preventDefault(); ev.stopPropagation(); }
+  let d=document.getElementById('aviso-dev');
+  if(!d){ d=document.createElement('div'); d.id='aviso-dev';
+    d.innerHTML='<div class="aviso-box"><div class="aviso-tag">EM DESENVOLVIMENTO</div><p>Este conteúdo será disponibilizado em breve.</p><button type="button">Fechar</button></div>';
+    d.addEventListener('click',e=>{ if(e.target===d||e.target.tagName==='BUTTON') d.classList.remove('on'); });
+    document.body.appendChild(d); }
+  d.classList.add('on');
+}
 const OUTROS_PLANOS=[
  {t:'PLANCON Chuvas Intensas 2025/2026',d:'Plano do ciclo anterior.',u:'https://marceloabelheira-cmd.github.io/PLANCON_CHUVAS_2025.2026/',icon:'storm'},
  {t:'PLANCON Incêndios Florestais 2026',d:'Seca, estiagem e incêndio florestal.',u:'https://marceloabelheira-cmd.github.io/PLANCON_IF_2026/',icon:'fire'},
- {t:'PLANCON Animais',d:'Plano prático de resgate e abrigo de animais.',u:'https://marceloabelheira-cmd.github.io/PLANCON_animais_PlanoPratico/',icon:'paw'}];
+ {t:'PLANCON Animais',d:'Plano prático de resgate e abrigo de animais.',u:'https://marceloabelheira-cmd.github.io/PLANCON_animais_PlanoPratico/',icon:'paw',emDev:true}];
 const SCREENS = {
   home: { crumb:"Início", render: () => `
     <div class="hero">
@@ -1754,14 +1773,14 @@ const SCREENS = {
       <div class="ref-card" onclick="nav('redecs')"><span class="prod-ic">${icon('pin')}</span><span class="prod-tx"><strong>REDECs</strong><span>As 11 Regionais de Defesa Civil e seus municípios.</span></span></div>
       <div class="ref-card" onclick="nav('autoridades')"><span class="prod-ic">${icon('users')}</span><span class="prod-tx"><strong>Autoridades</strong><span>Quem aprova e assina o PLANCON.</span></span></div>
     </div>
-    <a class="macro-link sraas-link" href="https://marceloabelheira-cmd.github.io/PLANCON_CHUVAS_2026.2027_protocolo.SIRENES/" target="_blank" rel="noopener"><div class="icon">${icon('radio')}</div><div class="macro-text"><h3>Protocolo do Sistema Remoto de Alerta e Alarme Sonoro (SRAAS) — Verão 2026/2027</h3><p>Gatilhos de acionamento das sirenes, fluxo de comunicação e atribuições — documento complementar a este PLANCON.</p></div><div class="go">Abrir ${icon('external')}</div></a>
+    <a class="macro-link sraas-link" ${linkOuDev(LINK_SRAAS)}><div class="icon">${icon('radio')}</div><div class="macro-text"><h3>Protocolo do Sistema Remoto de Alerta e Alarme Sonoro (SRAAS) — Verão 2026/2027</h3><p>Gatilhos de acionamento das sirenes, fluxo de comunicação e atribuições — documento complementar a este PLANCON.</p></div><div class="go">Abrir ${icon('external')}</div></a>
     <div class="macro-divider">O que ocorreu, na prática, no período de vigência do PLANCON anterior (${VERSAO.periodoAnterior})</div>
     <div class="prod-grid wide periodo">${VERSAO.periodo.map(p=>`
       <a class="prod" href="${p.u}" target="_blank" rel="noopener"><span class="prod-ic">${icon(p.icon)}</span>
         <span class="prod-tx"><strong>${p.t}</strong><span>${p.d}</span></span><span class="prod-go">${icon('external')}</span></a>`).join('')}</div>
     <div class="macro-divider">Outros Planos de Contingência — SEDEC-RJ</div>
     <div class="prod-grid outros">${OUTROS_PLANOS.map(p=>`
-      <a class="prod" href="${p.u}" target="_blank" rel="noopener"><span class="prod-ic">${icon(p.icon)}</span>
+      <a class="prod" ${linkOuDev(p)}><span class="prod-ic">${icon(p.icon)}</span>
         <span class="prod-tx"><strong>${p.t}</strong><span>${p.d}</span></span><span class="prod-go">${icon('external')}</span></a>`).join('')}</div>
   `},
 
