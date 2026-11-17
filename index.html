@@ -1111,6 +1111,11 @@ ol.steps.alpha{ list-style-type: lower-alpha; }
 #aviso-dev p{ margin:14px 0 16px; color:var(--gray-600,#555); }
 #aviso-dev button{ border:0; background:var(--blue-100,#e6eef8); color:var(--blue-800,#16467a); font-weight:700; padding:8px 18px; border-radius:8px; cursor:pointer; }
 
+.guia-calor{ text-align:center; margin:14px 0 4px; }
+.guia-calor a{ display:inline-flex; align-items:center; gap:7px; font-size:13.5px; font-weight:600; color:var(--blue-700); text-decoration:none; padding:6px 12px; border-radius:8px; }
+.guia-calor a:hover{ background:var(--blue-100); text-decoration:underline; }
+.guia-calor svg{ width:15px; height:15px; stroke:currentColor; fill:none; }
+
 </style>
 </head>
 <body>
@@ -1721,7 +1726,7 @@ function nmTabelaHTML(){
 
 let stack = ['home'];
 // ── Links ainda não autorizados: para liberar, troque emDev:true por emDev:false ──
-const LINK_SRAAS={u:'https://marceloabelheira-cmd.github.io/PLANCON_CHUVAS_2026.2027_protocolo.SIRENES/',emDev:true};
+const LINK_SRAAS={u:'https://marceloabelheira-cmd.github.io/PLANCON_CHUVAS_2026.2027_protocolo.SIRENES/',emDev:false};
 function linkOuDev(p){ return p.emDev ? `href="#" onclick="avisoEmDev(event)"` : `href="${p.u}" target="_blank" rel="noopener"`; }
 function avisoEmDev(ev){
   if(ev){ ev.preventDefault(); ev.stopPropagation(); }
@@ -1735,7 +1740,7 @@ function avisoEmDev(ev){
 const OUTROS_PLANOS=[
  {t:'PLANCON Chuvas Intensas 2025/2026',d:'Plano do ciclo anterior.',u:'https://marceloabelheira-cmd.github.io/PLANCON_CHUVAS_2025.2026/',icon:'storm'},
  {t:'PLANCON Incêndios Florestais 2026',d:'Seca, estiagem e incêndio florestal.',u:'https://marceloabelheira-cmd.github.io/PLANCON_IF_2026/',icon:'fire'},
- {t:'PLANCON Animais',d:'Plano prático de resgate e abrigo de animais.',u:'https://marceloabelheira-cmd.github.io/PLANCON_animais_PlanoPratico/',icon:'paw',emDev:true}];
+ {t:'PLANCON Animais',d:'Plano prático de resgate e abrigo de animais.',u:'https://marceloabelheira-cmd.github.io/PLANCON_animais_PlanoPratico/',icon:'paw',emDev:false}];
 const SCREENS = {
   home: { crumb:"Início", render: () => `
     <div class="hero">
@@ -1782,6 +1787,7 @@ const SCREENS = {
     <div class="prod-grid outros">${OUTROS_PLANOS.map(p=>`
       <a class="prod" ${linkOuDev(p)}><span class="prod-ic">${icon(p.icon)}</span>
         <span class="prod-tx"><strong>${p.t}</strong><span>${p.d}</span></span><span class="prod-go">${icon('external')}</span></a>`).join('')}</div>
+    <div class="guia-calor"><a href="https://marceloabelheira-cmd.github.io/EXCESSODECALOR_guia_mitigacaodeimpactos_RJ/" target="_blank" rel="noopener">${icon('sun')}Guia Prático de Enfrentamento ao Excesso de Calor${icon('external')}</a></div>
   `},
 
   cartao: { crumb:"Cartão-resumo", render: () => `
